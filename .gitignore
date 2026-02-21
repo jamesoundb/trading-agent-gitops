@@ -1,0 +1,37 @@
+# Kubernetes secrets (not in Git)
+secrets.yaml
+*-secrets.yaml
+sealed-secrets.yaml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+
+# Kustomize build output
+kustomization.yaml.bak
+
+# Git
+.git
+.gitconfig
+
+# Logs
+*.log
+
+# OS files
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# CI/CD
+.github/workflows/secrets.yaml

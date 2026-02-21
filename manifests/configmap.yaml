@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trading-config
+  namespace: trading
+data:
+  wheel_config.yaml: |
+    wheel:
+      symbols:
+        - AAPL
+        - MSFT
+        - QQQQ
+        - SPY
+        - XLK
+      target_yield: 0.02
+      min_days_to_expiration: 20
+      max_days_to_expiration: 60
+      target_dte_at_close: 21
+      max_positions: 5
+      position_size_percent: 5
+
+  bitcoin_momentum_config.yaml: |
+    bitcoin_momentum:
+      symbols:
+        - BTC-USD
+      timeframes:
+        - weekly
+        - monthly
+      sma_periods:
+        - 50
+        - 200
+      rsi_threshold_overbought: 70
+      rsi_threshold_oversold: 30
+      position_size: 0.5
+      max_positions: 1

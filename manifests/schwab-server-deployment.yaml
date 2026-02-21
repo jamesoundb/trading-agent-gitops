@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schwab-mcp-server
+  namespace: trading
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schwab-mcp-server
+  template:
+    metadata:
+      labels:
+        app: schwab-mcp-server
+    spec:
+      containers:
+      - name: schwab-mcp
+        image: ghcr.io/jkoelker/schwab-mcp:latest
+        imagePullPolicy: Always
+        command: ["schwab-mcp", "server"]
+        env:
+        - name: SCHWAB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_CLIENT_ID
+        - name: SCHWAB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_CLIENT_SECRET
+        - name: SCHWAB_MCP_DISCORD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_MCP_DISCORD_TOKEN
+        - name: SCHWAB_MCP_DISCORD_CHANNEL_ID
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_MCP_DISCORD_CHANNEL_ID
+        - name: SCHWAB_MCP_DISCORD_APPROVERS
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_MCP_DISCORD_APPROVERS
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command: ["schwab-mcp", "--help"]
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        restartPolicy: Always
+      nodeSelector:
+        node-role: control-plane

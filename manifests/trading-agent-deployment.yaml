@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-agent
+  namespace: trading
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trading-agent
+  template:
+    metadata:
+      labels:
+        app: trading-agent
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - schwab-mcp-server
+              topologyKey: kubernetes.io/hostname
+      
+      containers:
+      - name: trading-agent
+        image: ghcr.io/yourusername/trading-agent:latest
+        imagePullPolicy: Always
+        
+        command: ["python", "trading_agent.py"]
+        
+        env:
+        - name: SCHWAB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_CLIENT_ID
+        - name: SCHWAB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: SCHWAB_CLIENT_SECRET
+        - name: DISCORD_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: DISCORD_WEBHOOK_URL
+        - name: DRY_RUN
+          valueFrom:
+            secretKeyRef:
+              name: trading-credentials
+              key: DRY_RUN
+        
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+        - name: journal
+          mountPath: /app/journal
+        
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        
+        livenessProbe:
+          exec:
+            command: ["test", "-f", "/app/journal/trading_journal.csv"]
+          initialDelaySeconds: 60
+          periodSeconds: 300
+        
+        restartPolicy: Always
+      
+      volumes:
+      - name: config
+        configMap:
+          name: trading-config
+      - name: journal
+        persistentVolumeClaim:
+          claimName: trading-journal-pvc
+      
+      nodeSelector:
+        node-role: worker
+      
+      terminationGracePeriodSeconds: 30

@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trading-agent
+  namespace: argocd
+spec:
+  project: default
+  
+  source:
+    # Change USERNAME to your GitHub username
+    repoURL: https://github.com/USERNAME/trading-agent-gitops.git
+    targetRevision: HEAD
+    path: manifests
+  
+  destination:
+    # For control plane: https://kubernetes.default.svc
+    # For worker nodes: https://kubernetes.default.svc (with nodeSelector in manifests)
+    server: https://kubernetes.default.svc
+    namespace: trading
+  
+  syncPolicy:
+    # Manual sync for trading - don't auto-deploy live changes!
+    automated:
+      prune: false
+      selfHeal: false
+    
+    syncOptions:
+    - CreateNamespace=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
