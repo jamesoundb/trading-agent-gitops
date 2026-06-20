@@ -3,30 +3,29 @@ kind: Application
 metadata:
   name: trading-agent
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  
+
   source:
-    # Change USERNAME to your GitHub username
-    repoURL: https://github.com/USERNAME/trading-agent-gitops.git
-    targetRevision: HEAD
+    repoURL: https://github.com/jamesoundb/trading-agent-gitops.git
+    targetRevision: main
+    # Base manifests are DRY_RUN-neutral. To go live, point at overlays/prod
+    # (sets DRY_RUN=false) ONLY after validation — see overlays/prod/kustomization.yaml.
     path: manifests
-  
+
   destination:
-    # For control plane: https://kubernetes.default.svc
-    # For worker nodes: https://kubernetes.default.svc (with nodeSelector in manifests)
     server: https://kubernetes.default.svc
     namespace: trading
-  
+
   syncPolicy:
-    # Manual sync for trading - don't auto-deploy live changes!
-    automated:
-      prune: false
-      selfHeal: false
-    
+    # MANUAL sync for trading — never auto-deploy live trading changes.
+    # The `automated:` block is intentionally absent: ArgoCD will show OutOfSync
+    # and wait for an explicit `argocd app sync trading-agent` / UI sync.
     syncOptions:
-    - CreateNamespace=true
-    
+      - CreateNamespace=true
+
     retry:
       limit: 5
       backoff:

@@ -3,13 +3,13 @@ kind: Kustomization
 
 namespace: trading
 
-bases:
+resources:
   - ../../manifests
 
 # Prod environment: DRY_RUN=false for live trading
 # Warning: Only set DRY_RUN=false in Secret after extensive validation!
 
-patchesJson6902:
+patches:
   - target:
       group: apps
       version: v1
@@ -21,9 +21,11 @@ patchesJson6902:
         path: /spec/replicas
         value: 1
       - op: replace
-        path: /spec/template/spec/resources/limits/memory
+        path: /spec/template/spec/containers/0/resources/limits/memory
         value: "1Gi"
 
-commonLabels:
-  environment: prod
-  dry-run: "false"
+labels:
+  - pairs:
+      environment: prod
+      dry-run: "false"
+    includeSelectors: false

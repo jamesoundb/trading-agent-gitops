@@ -3,11 +3,11 @@ kind: Kustomization
 
 namespace: trading
 
-bases:
+resources:
   - ../../manifests
 
 # Dev environment: DRY_RUN=true for paper trading
-patchesJson6902:
+patches:
   - target:
       group: apps
       version: v1
@@ -19,6 +19,8 @@ patchesJson6902:
         path: /spec/replicas
         value: 1
 
-commonLabels:
-  environment: dev
-  dry-run: "true"
+labels:
+  - pairs:
+      environment: dev
+      dry-run: "true"
+    includeSelectors: false
